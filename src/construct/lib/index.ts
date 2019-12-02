@@ -17,8 +17,8 @@ export class WorkbenchDataModel extends cdk.Construct {
 
     private buildTables(props: WorkbenchDataModelProps) {
         for (let table of props.model.DataModel) {
-            const newTable = new Table(this, `${table.TableName}-table`, {
-                tableName: table.TableName,
+            const newTable = new Table(this, `${props.prefix}${table.TableName}-table`, {
+                tableName: `${props.prefix || ''}${table.TableName}`,
                 partitionKey: {
                     name: table.KeyAttributes.PartitionKey.AttributeName,
                     type: table.KeyAttributes.PartitionKey.AttributeType as AttributeType
@@ -43,11 +43,14 @@ export class WorkbenchDataModel extends cdk.Construct {
                     })
                 }
             }
-            Tag.add(newTable, "Author", props.model.ModelMetadata.Author);
-            Tag.add(newTable, "DateCreated", props.model.ModelMetadata.DateCreated);
-            Tag.add(newTable, "DateLastModified", props.model.ModelMetadata.DateLastModified);
-            Tag.add(newTable, "Description", props.model.ModelMetadata.Description);
+            Tag.add(newTable, "Author", this.sanitizeTag(props.model.ModelMetadata.Author));
+            Tag.add(newTable, "DateCreated", this.sanitizeTag(props.model.ModelMetadata.DateCreated));
+            Tag.add(newTable, "DateLastModified", this.sanitizeTag(props.model.ModelMetadata.DateLastModified));
         }
+    }
+
+    sanitizeTag(value: string) {
+        return value.substring(0, 255).replace(/[^\s\w.-=_:\/\+]/g, '')
     }
 }
 
@@ -68,6 +71,13 @@ export interface WorkbenchDataModelProps {
           }
      */
     model: Model;
+
+    /**
+     * A prefix to add to all Table names.
+     *
+     * e.g. "dev-"
+     */
+    prefix?: string;
 }
 
 /**
