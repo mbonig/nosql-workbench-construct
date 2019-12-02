@@ -3,6 +3,7 @@ import subs = require('@aws-cdk/aws-sns-subscriptions');
 import sqs = require('@aws-cdk/aws-sqs');
 import cdk = require('@aws-cdk/core');
 import {AttributeType, Table} from "@aws-cdk/aws-dynamodb";
+import {Tag} from "@aws-cdk/core";
 
 
 export class WorkbenchDataModel extends cdk.Construct {
@@ -42,6 +43,10 @@ export class WorkbenchDataModel extends cdk.Construct {
                     })
                 }
             }
+            Tag.add(newTable, "Author", props.model.ModelMetadata.Author);
+            Tag.add(newTable, "DateCreated", props.model.ModelMetadata.DateCreated);
+            Tag.add(newTable, "DateLastModified", props.model.ModelMetadata.DateLastModified);
+            Tag.add(newTable, "Description", props.model.ModelMetadata.Description);
         }
     }
 }
@@ -91,7 +96,7 @@ export interface DataModel {
             "AttributeType": string
         }
     },
-    "GlobalSecondaryIndexes": [
+    "GlobalSecondaryIndexes"?: [
         {
             "IndexName": string,
             "KeyAttributes": {
@@ -109,7 +114,7 @@ export interface DataModel {
             }
         }
     ],
-    "NonKeyAttributes": [
+    "NonKeyAttributes"?: [
         {
             "AttributeName": string,
             "AttributeType": string // should be enum?
