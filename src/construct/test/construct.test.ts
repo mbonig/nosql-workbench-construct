@@ -6,32 +6,53 @@ import 'should';
 const dataModel = require("./data/discussion-forum.json");
 
 
-
-test('Forum Table built with correct properties', () => {
+function getStack() {
     const app = new App();
     const stack = new Stack(app, "TestStack");
     // WHEN
-    new WorkbenchDataModel(stack, 'MyTestConstruct', {model: dataModel});
+    new WorkbenchDataModel(stack, 'MyTestConstruct', {model: dataModel, prefix: 'test-'});
     // THEN
+    return stack;
+}
+
+test('Forum Table built with correct keys', () => {
+    const stack = getStack();
 
     expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
-        "TableName": 'Forum',
         "KeySchema": [
             {
                 "AttributeName": "ForumName",
                 "KeyType": "HASH"
             }
-        ],
+        ]
+    }));
+});
+test('Forum Table built with correct attribute definitions', () => {
+    const stack = getStack();
+
+    expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
         "AttributeDefinitions": [
             {
                 "AttributeName": "ForumName",
                 "AttributeType": "S"
             }
-        ],
+        ]
+    }));
+});
+test('Forum Table built with correct provisioned throughput', () => {
+    const stack = getStack();
+
+    expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
         "ProvisionedThroughput": {
             "ReadCapacityUnits": 5,
             "WriteCapacityUnits": 5
-        },
+        }
+    }));
+});
+test('Forum Table built with correct tags', () => {
+    const stack = getStack();
+
+    expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
         "Tags": [
             {
                 "Key": "Author",
@@ -51,25 +72,18 @@ test('Forum Table built with correct properties', () => {
 
 
 test('Table gets prefix if given', () => {
-    const app = new App();
-    const stack = new Stack(app, "TestStack");
-    // WHEN
-    new WorkbenchDataModel(stack, 'MyTestConstruct', {model: dataModel, prefix: 'test-'});
-    // THEN
-
+    const stack = getStack();
     expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
         "TableName": 'test-Forum'
     }));
 });
 
 test('Thread Table has correct properties', () => {
-    const app = new App();
-    const stack = new Stack(app, "TestStack");
-    new WorkbenchDataModel(stack, 'MyTestConstruct', {model: dataModel});
+    const stack = getStack();
 
 
     expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
-        "TableName": 'Thread',
+        "TableName": 'test-Thread',
         "KeySchema": [
             {
                 "AttributeName": "ForumName",
@@ -98,12 +112,10 @@ test('Thread Table has correct properties', () => {
 
 });
 test('Reply Table built with correct properties including gsi', () => {
-    const app = new App();
-    const stack = new Stack(app, "TestStack");
-    new WorkbenchDataModel(stack, 'MyTestConstruct', {model: dataModel});
-
+    const stack = getStack();
 
     expectCDK(stack).to(haveResource("AWS::DynamoDB::Table", {
+        "TableName": 'test-Reply',
         "KeySchema": [
             {
                 "AttributeName": "Id",
